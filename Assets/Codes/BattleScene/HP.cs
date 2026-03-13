@@ -41,6 +41,7 @@ public class HP : MonoBehaviour
         
         currentHP -= damage;
 
+        //UIを更新
         if(hpSlider != null)
         {
             hpSlider.value = currentHP;
@@ -88,6 +89,17 @@ public class HP : MonoBehaviour
         if(gameObject.CompareTag("Player"))
             Physics2D.IgnoreLayerCollision(playerLayer, bossLayer, false);
         isInvincible = false; //無敵終了
+    }
+
+    public void Heal(int amount)
+    {
+        currentHP += amount;
+        if(currentHP > maxHP)
+            currentHP = maxHP;
+        if(hpSlider != null)
+        {
+            hpSlider.value = currentHP;
+        }
     }
 
     public void Die()
