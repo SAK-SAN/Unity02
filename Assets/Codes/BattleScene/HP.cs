@@ -37,7 +37,22 @@ public class HP : MonoBehaviour
     public void TakeDamage(int damage)
     {
         if(isInvincible)
+        {
             return;
+        }
+        
+        PlayerController player = GetComponent<PlayerController>();
+        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+
+        if(player != null)  //バグ対策(パリィ中にボスと重なっていると浮遊するバグ&パネル選択中にダメージを受けるとパネルが閉じないバグ)
+        {
+            player.CloseSpellMenu();
+            if(rb.gravityScale != player.defaultGravityScale)
+            {
+                rb.gravityScale = player.defaultGravityScale;
+            }
+        }
+        
         
         currentHP -= damage;
 

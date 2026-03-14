@@ -13,7 +13,7 @@ public class PlayerController   :   MonoBehaviour
     //public float hoverGravityScale = 0.5f;  //ホバリング中の重力
     private float defaultMoveSpeed;
     private float defaultJumpForce;
-    private float defaultGravityScale;
+    public float defaultGravityScale;
 
     [Header("吸い込み・吐き出し設定")]
     public GameObject inhaleArea;   //吸い込み判定
@@ -98,7 +98,9 @@ public class PlayerController   :   MonoBehaviour
             case PlayerState.Normal:    //通常時
                 HandleMovement();   //移動の処理
                 HandleJump(); //ジャンプの処理
-                if(Keyboard.current.zKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame) //Z入力時
+                if(Keyboard.current.zKey.wasPressedThisFrame 
+                || Keyboard.current.enterKey.wasPressedThisFrame
+                || Keyboard.current.eKey.wasPressedThisFrame) //Z入力時
                 {
                     StartInhaling();    //吸い込み開始の処理
                 }
@@ -110,7 +112,9 @@ public class PlayerController   :   MonoBehaviour
 
             case PlayerState.Inhaling:  //吸い込み時
                 rb.linearVelocity = new Vector2(0, rb.linearVelocityY);
-                if(Keyboard.current.zKey.wasReleasedThisFrame || Keyboard.current.enterKey.wasReleasedThisFrame)   //Zを離した時
+                if(Keyboard.current.zKey.wasReleasedThisFrame 
+                || Keyboard.current.enterKey.wasReleasedThisFrame
+                || Keyboard.current.eKey.wasReleasedThisFrame)   //Zを離した時
                 {
                     StopInhaling(); //吸い込み終了の処理
                 }
@@ -151,7 +155,7 @@ public class PlayerController   :   MonoBehaviour
         }
     }
 
-    void CloseSpellMenu()
+    public void CloseSpellMenu()
     {
         currentState = PlayerState.Normal;
         spellUI.SetActive(false);
@@ -361,7 +365,10 @@ public class PlayerController   :   MonoBehaviour
 
     void HandleJump()   //ジャンプ処理
     {
-        if((jumpCounter <= 2) && (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame))
+        if((jumpCounter <= 2) 
+        && (Keyboard.current.upArrowKey.wasPressedThisFrame 
+        || Keyboard.current.wKey.wasPressedThisFrame
+        || Keyboard.current.spaceKey.wasPressedThisFrame))
         {
             jumpCounter++;
             rb.linearVelocity = new Vector2(rb.linearVelocityX, jumpForce); //スペースキー入力時に上方向にjump方向加速
