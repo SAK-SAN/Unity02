@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 using System.Collections;
-using Unity.VisualScripting;
 
 public class PlayerController   :   MonoBehaviour
 {
@@ -104,7 +103,8 @@ public class PlayerController   :   MonoBehaviour
                 {
                     StartInhaling();    //吸い込み開始の処理
                 }
-                else if(Keyboard.current.sKey.wasPressedThisFrame || Keyboard.current.downArrowKey.wasPressedThisFrame)
+                else if(Keyboard.current.sKey.wasPressedThisFrame 
+                || Keyboard.current.downArrowKey.wasPressedThisFrame)
                 {
                     startParry();
                 }
@@ -151,7 +151,16 @@ public class PlayerController   :   MonoBehaviour
         if(Camera.main != null)
         {
             Vector3 screenPos = Camera.main.WorldToScreenPoint(targetWorldPos);
-            spellUI.GetComponent<RectTransform>().position = screenPos;
+            //spellUI.GetComponent<RectTransform>().position = screenPos;
+            RectTransform rectTransform = spellUI.GetComponent<RectTransform>();
+
+            float halfWidth = rectTransform.rect.width / 2f;
+            float halfHeight = rectTransform.rect.height / 2f;
+
+            screenPos.x = Mathf.Clamp(screenPos.x, halfWidth, Screen.width - halfWidth);
+            screenPos.y = Mathf.Clamp(screenPos.y, halfHeight, Screen.height - halfHeight);
+
+            rectTransform.position = screenPos;
         }
     }
 
@@ -164,22 +173,25 @@ public class PlayerController   :   MonoBehaviour
 
     void HandleSpellSelection() //パネルの操作
     {
-        if(Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame)
+        if(Keyboard.current.downArrowKey.wasPressedThisFrame 
+        || Keyboard.current.sKey.wasPressedThisFrame)
         {
             currentSpellIndex++;
-            if(currentSpellIndex > 5)
+            if(currentSpellIndex > spellTexts.Length - 1)
                 currentSpellIndex = 0;
             UpdateSpellTextColor();
         }
-        else if(Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame)
+        else if(Keyboard.current.upArrowKey.wasPressedThisFrame 
+        || Keyboard.current.wKey.wasPressedThisFrame)
         {
             currentSpellIndex--;
             if(currentSpellIndex < 0)
-                currentSpellIndex = 5;
+                currentSpellIndex = spellTexts.Length - 1;
             UpdateSpellTextColor();
         }
 
-        if(Keyboard.current.zKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame)
+        if(Keyboard.current.zKey.wasPressedThisFrame 
+        || Keyboard.current.enterKey.wasPressedThisFrame)
         {
             ExecuteSpell(currentSpellIndex);
         }
@@ -297,7 +309,7 @@ public class PlayerController   :   MonoBehaviour
 
         Physics2D.IgnoreLayerCollision(playerLayer, bossLayer, false);
         myHealth.isInvincible = false;
-        currentState = PlayerState.Normal;
+        //currentState = PlayerState.Normal;
         GetComponent<SpriteRenderer>().color = Color.white;
     }
 
@@ -339,11 +351,13 @@ public class PlayerController   :   MonoBehaviour
     {
         //moveInput = Input.GetAxisRaw("Horizontal"); //左右or"A"or"D"の入力を-1,1,0(入力なし)で格納
         moveInput = 0f;
-        if(Keyboard.current.rightArrowKey.isPressed || Keyboard.current.dKey.isPressed)
+        if(Keyboard.current.rightArrowKey.isPressed 
+        || Keyboard.current.dKey.isPressed)
         {
             moveInput = 1f;
         }
-        if(Keyboard.current.leftArrowKey.isPressed || Keyboard.current.aKey.isPressed)
+        if(Keyboard.current.leftArrowKey.isPressed 
+        || Keyboard.current.aKey.isPressed)
         {
             moveInput = -1f;
         }
@@ -399,7 +413,7 @@ public class PlayerController   :   MonoBehaviour
     {
         inhaleArea.SetActive(false);    //吸い込み判定をオフ
         
-        if(currentStarStock <= maxStarStock)
+        if(currentStarStock < maxStarStock)
         {
             currentStarStock++;
             UpdateStockUI();

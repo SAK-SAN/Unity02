@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(isGameOver && Keyboard.current.rKey.wasPressedThisFrame)
+        if(Keyboard.current.rKey.wasPressedThisFrame)
         {
             RestartGame();
         }
@@ -44,6 +44,6 @@ public class GameManager : MonoBehaviour
 
     void RestartGame()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("TitleScene");
     }
 }

@@ -1,4 +1,6 @@
 using System.Collections;
+using Unity.VisualScripting;
+
 //using UnityEditorInternal;
 using UnityEngine;
 
@@ -19,15 +21,24 @@ public class BossAI :MonoBehaviour
     public Transform leftStarPoint; //左の星
     public Transform rightStarPoint;    //右の星
 
+    [Header("ビーム攻撃の設定")]
+    public float beamChargeTime = 2.0f; //予備動作時間
+    public float beamFireTime = 1.0f;   //打ち続ける時間
+    public GameObject beamPrefab;
+    public Transform beamPoint; //ビームの発射位置
+    public float starSpawnInterval = 0.4f;  //星を出す間隔
+
+
     //ボスの状態(待機、歩き、ジャンプ)
-    public enum BossState{Idle, Walk, Jump, TackleCharge, TackleDash}
+    public enum BossState{Idle, Walk, Jump, TackleCharge, TackleDash, BeamCharge, BeamFire}
     public BossState currentState = BossState.Idle;
 
     private Rigidbody2D rb;
     private Transform player; //プレイヤーの位置情報保管場所
     private SpriteRenderer sr;
     private Color originalColor;    //オリジナルの色を保持
-    private Coroutine chargecCoroutine;
+    private Coroutine chargecCoroutine; //タックル予備動作コルーチン
+    private Coroutine beamChargeCoroutine;  //ビーム予備動作コルーチン
     private float stateTimer; //行動を切り替える残り時間
     private float dashDirection;    //突進の方向を保持する変数
     
@@ -109,66 +120,119 @@ public class BossAI :MonoBehaviour
                     ChangeState(BossState.Idle);
                 }
                 break;
+
+            case BossState.BeamCharge:
+                rb.linearVelocity = new Vector2(0, rb.linearVelocityY);
+                if(stateTimer <= 0)
+                    ChangeState(BossState.BeamFire);
+                break;
+            
+            case BossState.BeamFire:
+                rb.linearVelocity = new Vector2(0, rb.linearVelocityY);
+                if(stateTimer <= 0)
+                    ChangeState(BossState.Idle);
+                break;
         }
     }
 
     void ChooseNextState()
-    {
-        int rand = Random.Range(0, 3);
-        if(rand == 0)
+    {   
+        //全ステータス数を取得
+        int stateCount = System.Enum.GetValues(typeof(BossAI.BossState)).Length;
+        int chargeStateCount = 0;
+        string targetWord = "Charge";
+        //全てのステータス名を取得
+        string[] stateNames = System.Enum.GetNames(typeof(BossAI.BossState));
+        for(int i=0; i < stateNames.Length; i++)
         {
-            ChangeState(BossState.Walk);
+            if(stateNames[i].Contains(targetWord))
+                chargeStateCount++;
         }
-        else if(rand == 1)
+
+
+        int rand = Random.Range(0, stateCount - chargeStateCount);
+        
+        switch(rand)
         {
-            ChangeState(BossState.Jump);
-        }
-        else
-        {
-            ChangeState(BossState.TackleCharge);
+            case 0:
+                ChangeState(BossState.Walk);
+                break;
+            case 1:
+                ChangeState(BossState.Jump);
+                break;
+            case 2:
+                ChangeState(BossState.TackleCharge);
+                break;
+            case 3:
+                ChangeState(BossState.BeamCharge);
+                break;
         }
     }
 
     void ChangeState(BossState newState)
     {
         if(chargecCoroutine != null)
-        {
             StopCoroutine(chargecCoroutine);
-            sr.color = originalColor;
-        }
+        if(beamChargeCoroutine != null)
+            StopCoroutine(beamChargeCoroutine);
+
+        sr.color = originalColor;
 
         currentState = newState;
 
-        if(newState == BossState.Idle)
+        switch(newState)
         {
-            stateTimer = idleTime;  //1秒間待機
-        }
-        else if(newState == BossState.Walk)
-        {
-            stateTimer = WalkTime;  //3秒間歩き続ける
-        }
-        else if(newState == BossState.Jump)
-        {
-            stateTimer = JumpTime;  //飛ぶまでの猶予時間
-            JumpTowardsPlayer();    //上方向に加速度を与える
-        }
-        else if(newState == BossState.TackleCharge)
-        {
-            //予備動作時間
-            stateTimer = tackleChargeTime;
-            chargecCoroutine = StartCoroutine(ChargeRoutine());
-        }
-        else if(newState == BossState.TackleDash)
-        {
-            stateTimer = 5.0f; //壁にぶつからなかったときの保険
+            case BossState.Idle:
+                stateTimer = idleTime;  //1秒間待機
+                break;
 
-            //プレイヤーがいる方向を固定する
-            if(player != null)
-            {
-                dashDirection = Mathf.Sign(player.position.x - transform.position.x);
-                transform.localScale = new Vector3(dashDirection * Mathf.Abs(transform.localScale.x), transform.localScale.y, 1);
-            }
+            case BossState.Walk:
+                stateTimer = WalkTime;  //3秒間歩き続ける
+                break;
+
+            case BossState.Jump:
+                stateTimer = JumpTime;  //飛ぶまでの猶予時間
+                JumpTowardsPlayer();    //上方向に加速度を与える
+                break;
+
+            case BossState.TackleCharge:
+                //予備動作時間
+                stateTimer = tackleChargeTime;
+                chargecCoroutine = StartCoroutine(ChargeRoutine());
+                break;
+
+            case BossState.TackleDash:
+                stateTimer = 5.0f; //壁にぶつからなかったときの保険
+
+                //プレイヤーがいる方向を固定する
+                if(player != null)
+                {
+                    dashDirection = Mathf.Sign(player.position.x - transform.position.x);
+                    transform.localScale = new Vector3(dashDirection * Mathf.Abs(transform.localScale.x), transform.localScale.y, 1);
+                }
+                break;
+
+            case BossState.BeamCharge:
+                stateTimer = beamChargeTime;
+                if(player != null)
+                {
+                    float dir = Mathf.Sign(player.position.x - transform.position.x);
+                    transform.localScale = new Vector3(dir * Mathf.Abs(transform.localScale.x), transform.localScale.y, 1);
+                }
+                beamChargeCoroutine = StartCoroutine(BeamChargeCoroutine());
+                break;
+
+            case BossState.BeamFire:
+                stateTimer = beamFireTime;
+                if((beamPrefab != null) && (beamPoint != null))
+                {
+                    Instantiate(beamPrefab, beamPoint.position, transform.rotation);
+                }
+                break;
+            
+
         }
+        
     }
 
     void WalkTowardsPlayer()
@@ -214,6 +278,29 @@ public class BossAI :MonoBehaviour
             yield return new WaitForSeconds(0.1f);
             sr.color = originalColor;   //元の色にする
             yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private IEnumerator BeamChargeCoroutine()
+    {
+        while(stateTimer > 0)
+        {
+            if(starItemPrefab != null)
+            {
+                //星をボスの頭上にだす
+                Vector3 spawnPos = transform.position + new Vector3(0, 0.1f, 0);
+                GameObject star = Instantiate(starItemPrefab, spawnPos, Quaternion.identity);
+
+                //星を山なりにランダムに散らす
+                Rigidbody2D starRb = star.GetComponent<Rigidbody2D>();
+                if(starRb != null)
+                {
+                    float randomX = Random.Range(-4f, 4f);
+                    starRb.AddForce(new Vector2(randomX, 5f), ForceMode2D.Impulse);
+                }
+            }
+
+            yield return new WaitForSeconds(starSpawnInterval);
         }
     }
 
