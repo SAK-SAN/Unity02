@@ -48,7 +48,7 @@ public class PlayerController   :   MonoBehaviour
     private Coroutine blinkCoroutine;
 
     //状態管理
-    public enum PlayerState {Normal, Inhaling, Damaged, Parry, Selecting}
+    public enum PlayerState {Normal, Inhaling, Damaged, Parry, Selecting,}
     public PlayerState currentState = PlayerState.Normal;
 
     private Rigidbody2D rb;     //プレイヤーの重力や速度を操作する
@@ -56,6 +56,8 @@ public class PlayerController   :   MonoBehaviour
 
     private int jumpCounter = 0;    //ジャンプ回数を記録する変数
     private int currentSpellIndex = 0;  //現在選んでいる呪文の番号
+
+    private bool isFloatBuffActive = false;
 
     private SpriteRenderer sr;
     private Color originalColor;    //オリジナルの色を保持
@@ -132,6 +134,18 @@ public class PlayerController   :   MonoBehaviour
         if(currentState == PlayerState.Normal)
         {
             rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocityY);
+        }
+
+        if(isFloatBuffActive && currentState != PlayerState.Parry &&currentState != PlayerState.Damaged)
+        {
+            if(rb.linearVelocityY > 0.01f)
+            {
+                rb.gravityScale = defaultGravityScale;
+            }
+            else
+            {
+                rb.gravityScale = gravityReduction;
+            }
         }
     }
 
@@ -288,8 +302,10 @@ public class PlayerController   :   MonoBehaviour
     IEnumerator FloatBuffRoutine()
     {
         StartBuffBlink();
-        rb.gravityScale = gravityReduction;
+        //rb.gravityScale = gravityReduction;
+        isFloatBuffActive = true;
         yield return new WaitForSecondsRealtime(buffDuration);
+        isFloatBuffActive = false;
         rb.gravityScale = defaultGravityScale;
         StopBuffBlink();
     }
