@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "testBattle02.slnx"
+    "dotnet.defaultSolution": "testBattle03.slnx"
 }

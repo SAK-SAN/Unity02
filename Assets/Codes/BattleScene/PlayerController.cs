@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 using System.Collections;
+using System.Reflection;
 
 public class PlayerController   :   MonoBehaviour
 {
@@ -61,10 +62,12 @@ public class PlayerController   :   MonoBehaviour
 
     private SpriteRenderer sr;
     private Color originalColor;    //オリジナルの色を保持
+    private Animator anim;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         defaultGravityScale = rb.gravityScale;
         defaultMoveSpeed = moveSpeed;
         defaultJumpForce = jumpForce;
@@ -127,6 +130,12 @@ public class PlayerController   :   MonoBehaviour
                 HandleSpellSelection();
                 break;
         }
+        anim.SetInteger("State", (int)currentState);
+
+        anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocityX));
+
+        bool grounded = (jumpCounter == 0);
+        anim.SetBool("isGround", grounded);
     }
 
     void FixedUpdate()  //衝突や移動の演算時に一定のタイミングで呼ばれるらしい
