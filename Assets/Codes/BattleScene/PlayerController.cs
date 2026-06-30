@@ -173,17 +173,30 @@ public class PlayerController   :   MonoBehaviour
 
         if(Camera.main != null)
         {
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(targetWorldPos);
-            //spellUI.GetComponent<RectTransform>().position = screenPos;
-            RectTransform rectTransform = spellUI.GetComponent<RectTransform>();
+            // プレイヤーのワールド座標をスクリーン座標（ピクセル）に変換
+            Vector2 screenPos = Camera.main.WorldToScreenPoint(targetWorldPos);
 
-            float halfWidth = rectTransform.rect.width / 2f;
-            float halfHeight = rectTransform.rect.height / 2f;
+            // キャンバスとUIの情報を取得
+            Canvas parentCanvas = spellUI.GetComponentInParent<Canvas>();
+            RectTransform canvasRect = parentCanvas.GetComponent<RectTransform>();
+            RectTransform uiRect = spellUI.GetComponent<RectTransform>();
 
-            screenPos.x = Mathf.Clamp(screenPos.x, halfWidth, Screen.width - halfWidth);
-            screenPos.y = Mathf.Clamp(screenPos.y, halfHeight, Screen.height - halfHeight);
+            // スクリーン座標を、UI専用のローカル座標に正しく翻訳（変換）する魔法のメソッド
+            Vector2 localPos;
+            Camera uiCamera = parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : Camera.main;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, uiCamera, out localPos);
 
-            rectTransform.position = screenPos;
+            // 画面外にはみ出ないように制限（実際の画面ピクセルではなく、Canvasのサイズ基準で計算）
+            float halfCanvasWidth = canvasRect.rect.width / 2f;
+            float halfCanvasHeight = canvasRect.rect.height / 2f;
+            float halfUIWidth = uiRect.rect.width / 2f;
+            float halfUIHeight = uiRect.rect.height / 2f;
+
+            localPos.x = Mathf.Clamp(localPos.x, -halfCanvasWidth + halfUIWidth, halfCanvasWidth - halfUIWidth);
+            localPos.y = Mathf.Clamp(localPos.y, -halfCanvasHeight + halfUIHeight, halfCanvasHeight - halfUIHeight);
+
+            // 補正した座標をUI（anchoredPosition）に適用
+            uiRect.anchoredPosition = localPos;
         }
     }
 
