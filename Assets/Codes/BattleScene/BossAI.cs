@@ -41,11 +41,13 @@ public class BossAI :MonoBehaviour
     private Coroutine beamChargeCoroutine;  //ビーム予備動作コルーチン
     private float stateTimer; //行動を切り替える残り時間
     private float dashDirection;    //突進の方向を保持する変数
+    private Animator anim;
     
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
         originalColor = sr.color;
 
@@ -133,6 +135,12 @@ public class BossAI :MonoBehaviour
                     ChangeState(BossState.Idle);
                 break;
         }
+        anim.SetInteger("State", (int)currentState);
+
+        anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocityX));
+
+        bool grounded = (currentState != BossState.Jump);
+        anim.SetBool("isGround", grounded);
     }
 
     void ChooseNextState()
@@ -274,7 +282,7 @@ public class BossAI :MonoBehaviour
     {
         while(stateTimer > 0)
         {
-            sr.color = new Color(1f, 1f, 1f, originalColor.a); //白にする
+            sr.color = new Color(1f, 0, 0, originalColor.a); //赤にする
             yield return new WaitForSeconds(0.1f);
             sr.color = originalColor;   //元の色にする
             yield return new WaitForSeconds(0.1f);
