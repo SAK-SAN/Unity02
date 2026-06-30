@@ -1,7 +1,8 @@
 星を吸い込んでストックし、状況に応じて「呪文」や「パリィ」を使い分けてボスを討伐する2Dアクションゲームです。
 
 ## プレイ動画
-<img width="400" height="225" alt="testbattle" src="https://github.com/user-attachments/assets/86494944-721b-45e8-9657-c2feda0a1423" />
+<img width="400" height="225" alt="testbattle02" src="https://github.com/user-attachments/assets/237b3503-c059-4bbc-a61e-8f3154c744f6" />
+
 
 
 ## 🎮 ゲーム概要
