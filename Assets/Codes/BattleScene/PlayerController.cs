@@ -353,9 +353,18 @@ public class PlayerController   :   MonoBehaviour
 
     IEnumerator BlinkRoutine()
     {
+        Color blinkColor = new Color(0.5f, 0.5f, 0);
+
         while(true)
         {
-            sr.enabled  = !sr.enabled;
+            if(sr.color == blinkColor)
+            {
+                sr.color = originalColor;
+            }
+            else
+            {
+                sr.color = blinkColor;
+            }
             yield return new WaitForSecondsRealtime(blinkInterval);
         }
     }
@@ -381,7 +390,7 @@ public class PlayerController   :   MonoBehaviour
             if(blinkCoroutine != null)
                 StopCoroutine(blinkCoroutine);
 
-                sr.enabled = true;
+                sr.color = originalColor;
         }
     }
 //ここまでバフの処理
