@@ -1,5 +1,8 @@
 星を吸い込んでストックし、状況に応じて「呪文」や「パリィ」を使い分けてボスを討伐する2Dアクションゲームです。
 
+## ゲームURL
+https://unityroom.com/games/boss_battle
+
 ## プレイ動画
 <img width="400" height="225" alt="testbattle02" src="https://github.com/user-attachments/assets/237b3503-c059-4bbc-a61e-8f3154c744f6" />
 
